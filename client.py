@@ -14,6 +14,7 @@ ENTROU_SALA = False
 
 def server(udp):
     global ENTROU_SALA
+    global ID_MSG
     orig = ("", PORT)
     udp.bind(orig)
     while True:
@@ -25,10 +26,16 @@ def server(udp):
                 if string_dict["status"] == 1:
                     ENTROU_SALA = True
         elif string_dict["acao"] == 2:
-            pass
+            if string_dict["status"] == 1:
+                    ENTROU_SALA = False
+                    ID_SALA = None
         elif string_dict["acao"] == 3:
             pass
-        print(f"-> #{cliente}# {string_dict}")
+        else:
+            user = string_dict["nome"]
+            mensagem = string_dict["msg"]
+            print(f"#{user} - {mensagem}")
+        
 
 
 def client():
