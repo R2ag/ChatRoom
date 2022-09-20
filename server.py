@@ -49,9 +49,13 @@ def entrar_sala(msg_dic, client):
 
 
 def adicionar_usuario(usuario, cliente):
+    ip_client, port_client = cliente
+    port_client = port_client+usuario["id_sala"]
+    cliente_sala = (ip_client, port_client)
+    
     novo_usuario = {}
     novo_usuario["nome"] = usuario["nome"]
-    novo_usuario["conexao"] = cliente
+    novo_usuario["conexao"] = cliente_sala
     novo_usuario["id_sala"] = usuario["id_sala"]
     USERS.append(novo_usuario)
 
@@ -64,7 +68,7 @@ def sair_sala(msg_dic, client):
         "status": 1
     }
     msg_json = json.dumps(msg)
-    udp.sendto(msg_json.encode("utf-8"), cliente)
+    udp.sendto(msg_json.encode("utf-8"), client)
 
 def remove_usuario(usuario, cliente):
     novo_usuario = {}

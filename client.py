@@ -1,23 +1,32 @@
 import socket
 import sys
-import _thread
+import threading
 import json
 import time
+from tkinter.messagebox import NO
 
-HOST = ""  # Endereco IP do Servidor
-PORT = 5000  # Porta que o Servidor esta
-IP_SERVIDOR = "10.0.1.10"
+
+PORT_SERVICE = 5000
+PORT_CHAT = None
+SERVER = "10.0.1.10"
 NICKNAME = None
 ID_SALA = None
 ID_MSG = 1
 ENTROU_SALA = False
 
-def server(udp):
+
+
+udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+def service_receiver():
     global ENTROU_SALA
     global ID_MSG
     global ID_SALA
-    orig = ("", PORT)
+    global PORT_CHAT
+
+    orig = ("", PORT_SERVICE)
     udp.bind(orig)
+    
     while True:
         msg, cliente = udp.recvfrom(1024)
         msg_decoded = msg.decode('utf-8')
@@ -26,29 +35,42 @@ def server(udp):
             if string_dict["id_sala"] == ID_SALA:
                 if string_dict["status"] == 1:
                     ENTROU_SALA = True
+                    PORT_CHAT = PORT_SERVICE+ID_SALA
+                    t1.start()
+
         elif string_dict["acao"] == 2:
             if string_dict["status"] == 1:
                     ENTROU_SALA = False
                     ID_SALA = None
+                    PORT_CHAT = None
+                    
         elif string_dict["acao"] == 3:
             pass
-        else:
-            user = string_dict["nome"]
-            mensagem = string_dict["msg"]
-            print(f"#{user} - {mensagem}")
-        
 
+
+def chat_receiver(porta_chat):
+    udp.bind("", porta_chat)
+    while ENTROU_SALA:
+        msg, = udp.recvfrom(1024)
+        msg_dec = msg.decode("utf-8")
+        msg_dic = json.loads(msg_dec)
+        user = msg_dic["nome"]
+        mensagem = msg_dic["msg"]
+        print(f"#{user} - {mensagem}")
+
+
+t1 = threading.Thread(target=chat_receiver, args=PORT_CHAT)
+t2 = threading.Thread(target=service_receiver)
 
 def client():
     global ID_SALA
     global ID_MSG
     global NICKNAME
-    print(f"Starting UDP Server on port {PORT}")
-    udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    _thread.start_new_thread(server, (udp,))
+    print("Start Chat")
+    t2.start
     print("Type q to exit")
     message = None
-    dest = (IP_SERVIDOR, PORT)
+    dest = (SERVER, PORT_SERVICE)
     NICKNAME = input("Informe o seu nickname-> ")
     try:
         sala = int(input("Informe o ID da sala que deseja entrar-> "))
