@@ -2,8 +2,6 @@ import socket
 import _thread
 import json
 
-from client import ID_SALA
-
 PORT = 5000  # Porta que o Servidor esta
 LISTA_USUARIO = []
 
@@ -21,6 +19,11 @@ def remove_usuario(usuario, cliente):
     novo_usuario["id_sala"] = usuario["id_sala"]
     LISTA_USUARIO.remove(novo_usuario)
 
+def transmitir_msg(msg, udp):
+    msg_json = json.dumps(msg)
+    for usuario in LISTA_USUARIO:
+        if usuario["id_sala"] == msg["idsala"]:
+            udp.sendto(msg_json.encode("utf-8"), usuario["conexao"])
 
 def chat_server(udp):
     print(f"Starting UDP Server on port {PORT}")
@@ -67,10 +70,7 @@ def chat_server(udp):
                     "nome": string_dict["nome"],
                     "msg": string_dict["message"] 
                 }
-                msg_chat_json = json.dumps(msg_chat)
-                for item in LISTA_USUARIO:
-                    if (item["id_sala"] == string_dict["id_sala"]) and (item["conexao"] != cliente):
-                        udp.sendto(msg_json.encode("utf-8"), item["conexao"])
+                _thread.start_new_thread(transmitir_msg, (msg_chat,udp))
 
         except Exception as ex:
             pass

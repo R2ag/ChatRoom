@@ -15,6 +15,7 @@ ENTROU_SALA = False
 def server(udp):
     global ENTROU_SALA
     global ID_MSG
+    global ID_SALA
     orig = ("", PORT)
     udp.bind(orig)
     while True:
@@ -41,19 +42,20 @@ def server(udp):
 def client():
     global ID_SALA
     global ID_MSG
+    global NICKNAME
     print(f"Starting UDP Server on port {PORT}")
     udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     _thread.start_new_thread(server, (udp,))
     print("Type q to exit")
     message = None
     dest = (IP_SERVIDOR, PORT)
-    nome = input("Informe o seu nickname-> ")
+    NICKNAME = input("Informe o seu nickname-> ")
     try:
         sala = int(input("Informe o ID da sala que deseja entrar-> "))
         ID_SALA = sala
         entrar_sala = { 
             "acao": 1, 
-            "nome": nome,
+            "nome": NICKNAME,
             "id_sala": sala
         }
         string_json = json.dumps(entrar_sala)
