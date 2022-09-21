@@ -48,7 +48,7 @@ def service_receiver():
             pass
 
 
-def chat_receiver(porta_chat):
+def chat_receiver():
     orig = ("", PORT_CHAT)
     udp2.bind(orig)
     while ENTROU_SALA:
