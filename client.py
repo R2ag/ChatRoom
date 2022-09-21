@@ -3,8 +3,6 @@ import sys
 import threading
 import json
 import time
-from tkinter.messagebox import NO
-
 
 PORT_SERVICE = 5000
 PORT_CHAT = None
@@ -17,6 +15,7 @@ ENTROU_SALA = False
 
 
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+udp2 = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
 def service_receiver():
     global ENTROU_SALA
@@ -43,15 +42,17 @@ def service_receiver():
                     ENTROU_SALA = False
                     ID_SALA = None
                     PORT_CHAT = None
+                    udp2.close()
                     
         elif string_dict["acao"] == 3:
             pass
 
 
 def chat_receiver(porta_chat):
-    udp.bind("", porta_chat)
+    orig = ("", PORT_CHAT)
+    udp2.bind(orig)
     while ENTROU_SALA:
-        msg, = udp.recvfrom(1024)
+        msg, client = udp2.recvfrom(1024)
         msg_dec = msg.decode("utf-8")
         msg_dic = json.loads(msg_dec)
         user = msg_dic["nome"]
@@ -59,7 +60,7 @@ def chat_receiver(porta_chat):
         print(f"#{user} - {mensagem}")
 
 
-t1 = threading.Thread(target=chat_receiver, args=PORT_CHAT)
+t1 = threading.Thread(target=chat_receiver)
 t2 = threading.Thread(target=service_receiver)
 
 def client():
@@ -67,7 +68,7 @@ def client():
     global ID_MSG
     global NICKNAME
     print("Start Chat")
-    t2.start
+    t2.start()
     print("Type q to exit")
     message = None
     dest = (SERVER, PORT_SERVICE)

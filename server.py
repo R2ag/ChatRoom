@@ -10,7 +10,7 @@ MESSAGES = queue.Queue()
 CHAT = queue.Queue()
 
 udp = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-udp.bind("", PORT)
+udp.bind(("", PORT))
 
 def receive():
     while True:
@@ -83,7 +83,7 @@ def chat_room(msg_dic, client):
     msg_chat = {
         "id_sala": msg_dic["id_sala"],
         "nome": msg_dic["nome"],
-        "msg": msg_dic["message"] 
+        "msg": msg_dic["msg"] 
     }
     CHAT.put(msg_chat)
     msg = {
